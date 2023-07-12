@@ -15,6 +15,7 @@ import { HeartIcon } from "react-native-heroicons/solid";
 import { styles, theme } from "../theme";
 import { LinearGradient } from "expo-linear-gradient";
 import Cast1 from "../components/cast";
+import MovieList from "../components/MovieList";
 var { width, height } = Dimensions.get("window");
 const ios = Platform.OS == "ios";
 const topMargin = ios ? "" : "mt-1";
@@ -24,6 +25,7 @@ export default function MovieScreen() {
   const navigation = useNavigation();
   const [isFavourite, toggleFavourite] = useState(false);
   const [cast, setCast] = useState([1, 2, 3, 4, 5]);
+  const [similarMovies, setsimilarMovies] = useState([1, 2, 3, 4, 5]);
   let movieName = "Ant-Man and the wasp: Qualumiana";
 
   useEffect(() => {
@@ -105,7 +107,14 @@ export default function MovieScreen() {
           who is the mysterious Kang?{" "}
         </Text>
       </View>
-      <Cast1 cast={cast} />
+      {/* Cast */}
+      <Cast1 navigation={navigation} cast={cast} />
+      {/* similat movies */}
+      <MovieList
+        title="Similar Movies"
+        hideSeeAll={true}
+        data={similarMovies}
+      />
     </ScrollView>
   );
 }
