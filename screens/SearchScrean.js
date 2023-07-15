@@ -8,20 +8,46 @@ import {
   TouchableNativeFeedback,
   Image,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { XMarkIcon } from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
+
+import Loading from "../components/loading";
+import debounce from "lodash.debounce";
+import { searchMovie } from "../api/moviedb";
 var { width, height } = Dimensions.get("window");
 export default function SearchScrean() {
   const navigation = useNavigation();
   const [results, SetResults] = useState([1, 2, 3, 4]);
+  const [loading, SetLoadding] = useState(false);
   let movieName = "Ant-Man and the wasp: Qualumiana";
+  const handleSearch = (value) => {
+    if (value && value.length > 2) {
+      SetLoadding(true);
+      searchMovie({
+        query: value,
+        include_adult: "false",
+        language: "en-US",
+        page: "1",
+      }).then((data) => {
+        SetLoadding(false);
+        console.log("got search results", data);
 
+        // if (data && data.results) SetResults(data);
+      });
+    } else {
+      SetLoadding(false);
+      SetResults([]);
+    }
+  };
+
+  const handleTextDebounce = useCallback(debounce(handleSearch, 600), []);
   return (
     <SafeAreaView className="bg-neutral-800 flex-1">
       <View className=" mx-4 mb3 flex-row justify-between items-center border border-e-neutral-500 rounded-full">
         <TextInput
+          onChangeText={handleTextDebounce}
           placeholder="Search Movie"
           placeholderTextColor={"lightgray"}
           className="pb-1 flex-1 pl-6 text-base font-semibold text-white tracking-wider"
@@ -35,7 +61,9 @@ export default function SearchScrean() {
       </View>
       {/* results */}
 
-      {results.length > 0 ? (
+      {loading ? (
+        <Loading />
+      ) : results.length > 0 ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 15 }}

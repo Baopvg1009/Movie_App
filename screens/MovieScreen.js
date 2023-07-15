@@ -16,6 +16,14 @@ import { styles, theme } from "../theme";
 import { LinearGradient } from "expo-linear-gradient";
 import Cast1 from "../components/cast";
 import MovieList from "../components/MovieList";
+import Loading from "../components/loading";
+import {
+  fallbackMoviePoster,
+  fetchCreditsMovie,
+  fetchDetailsMovies,
+  fetchSimilarMovie,
+  image500,
+} from "../api/moviedb";
 var { width, height } = Dimensions.get("window");
 const ios = Platform.OS == "ios";
 const topMargin = ios ? "" : "mt-1";
@@ -24,13 +32,37 @@ export default function MovieScreen() {
   const { params: item } = useRoute();
   const navigation = useNavigation();
   const [isFavourite, toggleFavourite] = useState(false);
-  const [cast, setCast] = useState([1, 2, 3, 4, 5]);
-  const [similarMovies, setsimilarMovies] = useState([1, 2, 3, 4, 5]);
+  const [cast, setCast] = useState([]);
+  const [similarMovies, setsimilarMovies] = useState([]);
+  const [loading, SetLoadding] = useState(false);
+  const [movie, setMovie] = useState([]);
   let movieName = "Ant-Man and the wasp: Qualumiana";
 
   useEffect(() => {
     //call the api
+    // console.log("id", item.id);
+    SetLoadding(true);
+    getMovieDetail(item.id);
+    getMovieCredits(item.id);
+    getMovieSimilar(item.id);
   }, [item]);
+
+  const getMovieDetail = async (id) => {
+    const data = await fetchDetailsMovies(id);
+    // console.log("got the movie", data);
+    if (data) setMovie(data);
+    SetLoadding(false);
+  };
+  const getMovieCredits = async (id) => {
+    const data = await fetchCreditsMovie(id);
+    // console.log("got credits:", data);
+    if (data && data.cast) setCast(data.cast);
+  };
+  const getMovieSimilar = async (id) => {
+    const data = await fetchSimilarMovie(id);
+    // console.log("got similar:", data);
+    if (data && data.results) setsimilarMovies(data.results);
+  };
   return (
     <ScrollView
       contentContainerStyle={{ paddingBottom: 40 }}
@@ -63,48 +95,61 @@ export default function MovieScreen() {
             />
           </TouchableOpacity>
         </SafeAreaView>
-        <View>
-          <Image
-            source={require("../assets/images/moviePoster2.png")}
-            style={{ width, height: height * 0.55 }}
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(23,23,23,0.8)", "rgba(23,23,23,1)"]}
-            style={{ width, height: height * 0.4 }}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-            className="absolute bottom-0"
-          />
-        </View>
+
+        {loading ? (
+          <Loading />
+        ) : (
+          <View>
+            <Image
+              // source={require("../assets/images/moviePoster2.png")}
+              source={{
+                uri: image500(movie?.poster_path) || fallbackMoviePoster,
+              }}
+              style={{ width, height: height * 0.55 }}
+            />
+            <LinearGradient
+              colors={["transparent", "rgba(23,23,23,0.8)", "rgba(23,23,23,1)"]}
+              style={{ width, height: height * 0.4 }}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              className="absolute bottom-0"
+            />
+          </View>
+        )}
       </View>
 
       {/* Movie detail */}
       <View style={{ marginTop: -(height * 0.09) }} className="space-y-3">
         {/* Title */}
         <Text className="text-white text-center text-3xl font-bold tracking-wider">
-          {movieName}
+          {movie?.title}
         </Text>
         {/* status, release, runtime */}
-        <Text className="text-neutral-400 font-semibold text-base text-center">
-          Released • 2023 • 170 min
-        </Text>
+
+        {movie?.id ? (
+          <Text className="text-neutral-400 font-semibold text-base text-center">
+            {movie?.status} • {movie?.release_date?.split("-")[0]} •
+            {movie?.runtime} min
+          </Text>
+        ) : null}
+        {/* genres */}
         <View className="flex-row justify-center mx-4 space-x-2">
-          <Text className="text-neutral-400 font-semibold text-base text-center">
-            Action •
-          </Text>
-          <Text className="text-neutral-400 font-semibold text-base text-center">
-            Thrill •
-          </Text>
-          <Text className="text-neutral-400 font-semibold text-base text-center">
-            Comedy •
-          </Text>
+          {movie?.genres?.map((genres, index) => {
+            let showDot = index + 1 != movie.genres.length;
+            return (
+              <Text
+                key={index}
+                className="text-neutral-400 font-semibold text-base text-center"
+              >
+                {genres?.name} {showDot ? "•" : null}
+                {/* nếu biến showDot là true, dấu chấm động (•) sẽ được hiển thị */}
+              </Text>
+            );
+          })}
         </View>
         {/* Destcription */}
         <Text className="text-neutral-400 mx-4 tracking-wide">
-          Scott Lang and Hope Van Dyne are dragged into the Quantum Realm, along
-          with Hope's parents and Scott's daughter Cassie. Together they must
-          find a way to escape, but what secrets is Hope's mother hiding? And
-          who is the mysterious Kang?{" "}
+          {movie?.overview}
         </Text>
       </View>
       {/* Cast */}
