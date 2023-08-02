@@ -6,7 +6,8 @@ const apiBaseUrl = "https://api.themoviedb.org/3";
 const trendingMoviesEndpoint = `${apiBaseUrl}/trending/movie/day?api_key=${apiKey}`;
 const upcomgingMoviesEndpoint = `${apiBaseUrl}/movie/upcoming?api_key=${apiKey}`;
 const topRatedMoviesEndpoint = `${apiBaseUrl}/movie/top_rated?api_key=${apiKey}`;
-const searchMovieEndpoint = `${apiBaseUrl}/search/movie/api_key=${apiKey}`;
+const searchMovieEndpoint = `${apiBaseUrl}/search/movie?api_key=${apiKey}`;
+
 // dyamic endpoints
 const movieDetailsEndpoint = (id) =>
   `${apiBaseUrl}/movie/${id}?api_key=${apiKey}`;
@@ -14,6 +15,7 @@ const movieCreditsEndpoint = (id) =>
   `${apiBaseUrl}/movie/${id}/credits?api_key=${apiKey}`;
 const movieSimilarEndpoint = (id) =>
   `${apiBaseUrl}/movie/${id}/similar?api_key=${apiKey}`;
+
 
 const personDetailEndpoint = (id) =>
   `${apiBaseUrl}/person/${id}?api_key=${apiKey}`;
@@ -72,6 +74,6 @@ export const fetchPersonDetails = (id) => {
 export const fetchPersonMovie = (id) => {
   return apiCall(personMoviesEndpoint(id));
 };
-export const searchMovie = (params) => {
+export const searchMovie = params => {
   return apiCall(searchMovieEndpoint, params);
 };
